@@ -120,15 +120,10 @@ with col_trend2:
 
 # Executive Summary - Key Insights
 st.markdown("##### Key Insights")
-col1, col2, col3 = st.columns(3)
+col1, col2 = st.columns(2)
+
 
 with col1:
-    pivot_filtered['Trend'] = pivot_filtered['2025'] - pivot_filtered['2023']
-    top_improved = pivot_filtered.nlargest(1, 'Trend').reset_index().merge(q_map, on='Question').iloc[0]
-    st.info(
-        f"**🚀 Most Improved**  \n{top_improved['Question']}: **+{top_improved['Trend']:.1f}%**  \n*{truncate_text(top_improved['Item.Text'])}*")
-
-with col2:
     pivot_filtered['Avg_Score'] = pivot_filtered[['2023', '2024', '2025']].mean(axis=1)
     top_performer = pivot_filtered.nlargest(1, 'Avg_Score')
     top_q_id = top_performer.index[0]
@@ -136,7 +131,7 @@ with col2:
     top_q = q_map[q_map['Question'] == top_q_id].iloc[0]
     st.success(f"**⭐ Top Performer**  \n{top_q_id}: **{top_q_val:.1f}%**  \n*{truncate_text(top_q['Item.Text'])}*")
 
-with col3:
+with col2:
     bottom_performer = pivot_filtered.nsmallest(1, 'Avg_Score')
     btm_q_id = bottom_performer.index[0]
     btm_q_val = bottom_performer['Avg_Score'].values[0]
