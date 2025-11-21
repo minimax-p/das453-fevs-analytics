@@ -83,7 +83,7 @@ st.sidebar.markdown("Note: Strength and Weakness thresholds set in sidebar affec
 # ---------------------------
 # TITLE
 # ---------------------------
-st.title("FEVS Analytics | 2023–2025")  # removed emojis for a cleaner look
+st.title("DAS453 - FEVS Analytics | Minh Pham")  # removed emojis for a cleaner look
 
 # ---------------------------
 # METRICS SUMMARY
@@ -102,8 +102,8 @@ overall_positive = pf.mean().mean()
 num_strengths = (pf.mean(axis=1) >= strength_threshold).sum()
 num_weaknesses = (pf.mean(axis=1) < weakness_threshold).sum()
 
-c1, c2, c3, c4, c5 = st.columns(5)
-c1.metric("Total responses (people)", f"{total_responses_idx:,}")
+c2, c3, c4, c5 = st.columns(4)
+# c1.metric("Total responses (people)", f"{total_responses_idx:,}")
 c2.metric("Average Positive", f"{overall_positive:.2f}%" if not np.isnan(overall_positive) else "N/A")
 c3.metric("Questions in view", len(pf))
 c4.metric(f"Strengths (avg ≥ {strength_threshold}%)", int(num_strengths))
@@ -286,7 +286,7 @@ if selected_index == 'All' or sub_counts.get(selected_index, 0) > 1:
 st.markdown("### Question performance heatmap")
 
 # Heatmap data with question label
-pivot_display = pivot_filtered[['2023', '2024', '2025']].sort_values(by='2025', ascending=False)
+pivot_display = pivot_filtered[['2023', '2024', '2025']].sort_values(by='2025', ascending=True)
 pivot_with_text = pivot_display.reset_index().merge(q_map, on='Question')
 pivot_with_text['Display'] = pivot_with_text['Question'] + ': ' + pivot_with_text['Item.Text'].apply(
     lambda x: truncate_text(x, 30))
