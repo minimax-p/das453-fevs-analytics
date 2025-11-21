@@ -56,13 +56,9 @@ selected_index = st.sidebar.selectbox("Filter by Index:", ['All'] + sorted(df_fu
 strength_threshold = st.sidebar.slider("Strength (%) (lower-bound):", 60, 90, 70, 5)
 weakness_threshold = st.sidebar.slider("Improvement (%) (higher-bound):", 30, 60, 60, 5)
 
-st.sidebar.markdown("---")
+
 question_cols = sorted(pivot.index.tolist(), key=lambda x: int(x[1:]))
 selected_question = st.sidebar.selectbox("Question Drilldown:", ['None'] + question_cols)
-
-if st.sidebar.button("📥 Download Results"):
-    csv = df_full.to_csv(index=False)
-    st.sidebar.download_button("Download CSV", csv, "fevs_results.csv", "text/csv")
 
 # Apply filters
 if selected_index != 'All':
@@ -75,20 +71,16 @@ else:
 # Title
 st.title("📊 FEVS Analytics | 2023-2025")
 
-col1, col2, col3, col4, col5 = st.columns(5)
+col1, col2, col3, col4 = st.columns(4)
 
 total_responses = len(df_main)
-response_growth = (df_main[df_main['FY'] == 2025].shape[0] - df_main[df_main['FY'] == 2023].shape[0]) / \
-                  df_main[df_main['FY'] == 2023].shape[0] * 100
 overall_positive = pivot_filtered.mean().mean()
-positive_trend = pivot_filtered['2025'].mean() - pivot_filtered['2023'].mean()
 num_strengths = len(pivot_filtered[pivot_filtered.min(axis=1) >= strength_threshold])
 
-col1.metric("Responses", f"{total_responses:,}", f"+{response_growth:.1f}%")
-col2.metric("Avg Positive", f"{overall_positive:.1f}%", f"{positive_trend:+.1f}%")
+col1.metric("Total Responses", f"{total_responses:,}")
+col2.metric("Average Positive", f"{overall_positive:.2f}%")
 col3.metric("Questions", len(pivot_filtered))
 col4.metric(f"Strengths ≥{strength_threshold}%", num_strengths)
-col5.metric("Participation", f"{(total_responses / 10000 * 100):.1f}%")
 
 # Compact Trend Charts
 col_trend1, col_trend2 = st.columns(2)
@@ -120,25 +112,30 @@ with col_trend2:
 
 # Executive Summary - Key Insights
 st.markdown("##### Key Insights")
-col1, col2 = st.columns(2)
-
+col1, col2, col3 = st.columns(3)
 
 with col1:
+    pivot_filtered['Trend'] = pivot_filtered['2025'] - pivot_filtered['2023']
+    top_improved = pivot_filtered.nlargest(1, 'Trend').reset_index().merge(q_map, on='Question').iloc[0]
+    st.info(
+        f"**🚀 Most Improved (2025 vs 2023)**  \n{top_improved['Question']}: **+{top_improved['Trend']:.1f}%**  \n*{truncate_text(top_improved['Item.Text'])}*")
+
+with col2:
     pivot_filtered['Avg_Score'] = pivot_filtered[['2023', '2024', '2025']].mean(axis=1)
     top_performer = pivot_filtered.nlargest(1, 'Avg_Score')
     top_q_id = top_performer.index[0]
     top_q_val = top_performer['Avg_Score'].values[0]
     top_q = q_map[q_map['Question'] == top_q_id].iloc[0]
-    st.success(f"**⭐ Top Performer**  \n{top_q_id}: **{top_q_val:.1f}%**  \n*{truncate_text(top_q['Item.Text'])}*")
+    st.success(f"**⭐ Top Performer (Average Positive Percentage)**  \n{top_q_id}: **{top_q_val:.1f}%**  \n*{truncate_text(top_q['Item.Text'])}*")
 
-with col2:
+with col3:
     bottom_performer = pivot_filtered.nsmallest(1, 'Avg_Score')
     btm_q_id = bottom_performer.index[0]
     btm_q_val = bottom_performer['Avg_Score'].values[0]
     btm_q = q_map[q_map['Question'] == btm_q_id].iloc[0]
     if btm_q_val < 60:
         st.warning(
-            f"**⚠️ Needs Attention**  \n{btm_q_id}: **{btm_q_val:.1f}%**  \n*{truncate_text(btm_q['Item.Text'])}*")
+            f"**⚠️ Needs Attention (Average Positive Percentage)**  \n{btm_q_id}: **{btm_q_val:.1f}%**  \n*{truncate_text(btm_q['Item.Text'])}*")
     else:
         st.success(f"**✅ Lowest (Still Good)**  \n{btm_q_id}: **{btm_q_val:.1f}%**  \n*All questions above 60%*")
 
@@ -192,10 +189,10 @@ for i, (idx, val) in enumerate(index_performance.head(num_gauges).items()):
         number={'suffix': '%', 'font': {'size': 16}},
         gauge={'axis': {'range': [0, 100], 'tickfont': {'size': 10}, 'tickmode': 'array', 'tickvals': [20, 40, 60, 80, 100]},
                'bar': {'color': 'green' if val >= 70 else 'orange' if val >= 60 else 'red', 'thickness': 0.7},
-               'steps': [
-                   {'range': [0, 40], 'color': "lightgray"},
-                   {'range': [40, 70], 'color': "lightblue"},
-                   {'range': [70, 100], 'color': "lightgreen"}]
+               # 'steps': [
+               #     {'range': [0, 40], 'color': "black"},
+               #     {'range': [40, 70], 'color': "red"},
+               #     {'range': [70, 100], 'color': "orange"}]
                }
     ), row=1, col=i + 1)
 
