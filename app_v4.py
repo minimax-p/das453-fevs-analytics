@@ -234,7 +234,7 @@ else:
     st.plotly_chart(fig_all, use_container_width=True)
 
 # ---------------------------
-# Index tab: Gauges & Sub-index breakdown
+# Index tab: Index & Sub-index breakdown
 # ---------------------------
 st.markdown("### Index Performance - 3 Year Average")
 
@@ -259,23 +259,51 @@ st.plotly_chart(fig_idx, use_container_width=True)
 
 
 # Sub-index breakdown (hide if only one sub-index)
-# st.markdown("### Index & Sub-Index Breakdown - 3 Years Average")
 index_breakdown = df_filtered.groupby(['Index', 'Sub.Index'])['Positive'].mean().reset_index()
 sub_counts = index_breakdown.groupby('Index')['Sub.Index'].nunique()
-# if selected index has only one sub-index, hide the large bar
+
+def score_color(v):
+    return color_map['Strength'] if v >= strength_threshold else color_map['Neutral'] if v >= weakness_threshold else color_map['Weakness']
+
 if selected_index == 'All' or sub_counts.get(selected_index, 0) > 1:
-    index_avg = df_filtered.groupby('Index')['Positive'].mean().sort_values(ascending=False)
-    index_breakdown['Index'] = pd.Categorical(index_breakdown['Index'], categories=index_avg.index)
-    index_breakdown = index_breakdown.sort_values(['Index', 'Positive'], ascending=[False, False])
     st.markdown("### Index & Sub-Index Breakdown - 3 Years Average")
-    fig3 = px.bar(index_breakdown, x='Positive', y='Sub.Index', color='Index',
-                  orientation='h', labels={'Positive': '% Positive', 'Sub.Index': 'Sub-Index'},
-                  color_discrete_sequence=px.colors.qualitative.Set2)
-    fig3.add_vline(x=strength_threshold, line_dash="dash", line_color="green", annotation_text=f"Strength: {strength_threshold}%", annotation_position="top right")
-    fig3.add_vline(x=weakness_threshold, line_dash="dash", line_color="red", annotation_text=f"Weakness: {weakness_threshold}%", annotation_position="top left")
-    fig3.update_layout(height=420, margin=dict(l=0, r=0, t=10, b=0),
-                       legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1))
+
+    if selected_index != 'All':
+        sub_df = index_breakdown[index_breakdown['Index'] == selected_index].copy()
+        sub_df = sub_df.sort_values('Positive', ascending=False).reset_index(drop=True)
+        sub_df['Color'] = sub_df['Positive'].apply(score_color)
+        sub_df['Sub.Index'] = pd.Categorical(sub_df['Sub.Index'], categories=sub_df['Sub.Index'])
+
+        fig3 = px.bar(sub_df, x='Positive', y='Sub.Index', orientation='h',
+                      color='Color', color_discrete_map='identity',
+                      labels={'Positive':'% Positive','Sub.Index':'Sub-Index'})
+
+        fig3.add_vline(x=strength_threshold, line_dash="dash", line_color="green",
+                       annotation_text=f"Strength: {strength_threshold}%", annotation_position="top right")
+        fig3.add_vline(x=weakness_threshold, line_dash="dash", line_color="red",
+                       annotation_text=f"Weakness: {weakness_threshold}%", annotation_position="top left")
+
+        fig3.update_layout(height=420, margin=dict(l=0,r=0,t=10,b=0), showlegend=False)
+
+    else:
+        index_avg = df_filtered.groupby('Index')['Positive'].mean().sort_values(ascending=False)
+        index_breakdown['Index'] = pd.Categorical(index_breakdown['Index'], categories=index_avg.index)
+        index_breakdown = index_breakdown.sort_values(['Index','Positive'], ascending=[False,False])
+
+        fig3 = px.bar(index_breakdown, x='Positive', y='Sub.Index', orientation='h',
+                      color='Index', color_discrete_sequence=px.colors.qualitative.Set2,
+                      labels={'Positive':'% Positive','Sub.Index':'Sub-Index'})
+
+        fig3.add_vline(x=strength_threshold, line_dash="dash", line_color="green",
+                       annotation_text=f"Strength: {strength_threshold}%", annotation_position="top right")
+        fig3.add_vline(x=weakness_threshold, line_dash="dash", line_color="red",
+                       annotation_text=f"Weakness: {weakness_threshold}%", annotation_position="top left")
+
+        fig3.update_layout(height=420, margin=dict(l=0,r=0,t=10,b=0),
+                           legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1))
+
     st.plotly_chart(fig3, use_container_width=True)
+
 
 if selected_index == 'All':
     st.markdown("#### Distribution of question average scores (current view)")
