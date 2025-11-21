@@ -85,9 +85,6 @@ st.sidebar.markdown("Note: Strength and Weakness thresholds set in sidebar affec
 # ---------------------------
 st.title("FEVS Analytics | 2023–2025")  # removed emojis for a cleaner look
 
-# add tabs
-tab1, tab2 = st.tabs(["📈 Big Picture", "🔍 Question Drilldown"])
-
 # ---------------------------
 # METRICS SUMMARY
 # --------------------------
