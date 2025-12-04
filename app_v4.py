@@ -266,7 +266,7 @@ if selected_index == 'All' or sub_counts.get(selected_index, 0) > 1:
         fig3.update_layout(height=420, margin=dict(l=0,r=0,t=10,b=0), showlegend=False)
 
     else:
-        index_avg = df_filtered.groupby('Index')['Positive'].mean().sort_values(ascending=False)
+        index_avg = df_filtered.groupby('Index')['Positive'].mean().sort_values(ascending=True)
         index_breakdown['Index'] = pd.Categorical(index_breakdown['Index'], categories=index_avg.index)
         index_breakdown = index_breakdown.sort_values(['Index','Positive'], ascending=[True,True]).reset_index(drop=True)
 
