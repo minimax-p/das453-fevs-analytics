@@ -266,18 +266,16 @@ if selected_index == 'All' or sub_counts.get(selected_index, 0) > 1:
         fig3.update_layout(height=420, margin=dict(l=0,r=0,t=10,b=0), showlegend=False)
 
     else:
-        index_avg = df_filtered.groupby('Index')['Positive'].mean().sort_values(ascending=True)
+        index_avg = df_filtered.groupby('Index')['Positive'].mean().sort_values(ascending=False)
         index_breakdown['Index'] = pd.Categorical(index_breakdown['Index'], categories=index_avg.index)
         index_breakdown = index_breakdown.sort_values(['Index','Positive'], ascending=[True,True]).reset_index(drop=True)
 
-        print(index_breakdown)
-
         fig3 = px.bar(index_breakdown, x='Positive', y='Sub.Index', orientation='h',color='Index',
                       color_discrete_sequence=px.colors.qualitative.Set2,labels={'Positive':'% Positive','Sub.Index':'Sub-Index'},
-                      category_orders={'Index': index_breakdown.index.tolist()})
+                      category_orders={'Index': index_avg.index.tolist()})
         fig3.add_vline(x=strength_threshold, line_dash="dash", line_color="green",annotation_text=f"Strength: {strength_threshold}%", annotation_position="top right")
         fig3.add_vline(x=weakness_threshold, line_dash="dash", line_color="red",annotation_text=f"Weakness: {weakness_threshold}%", annotation_position="top left")
-        fig3.update_layout(height=600, margin=dict(l=0,r=0,t=10,b=0),legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="center", x=0.5))
+        fig3.update_layout(height=600, margin=dict(l=0,r=0,t=10,b=0),legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="center", x=0.5), legend_traceorder='reversed')
         fig3.update_traces(texttemplate='%{x:.1f}%', textposition='inside')
     st.plotly_chart(fig3, width='stretch')
 
