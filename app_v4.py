@@ -192,7 +192,8 @@ if n_q > 20:
     fig1 = px.bar(top10, x='Avg', y='Label', orientation='h', color='Category', color_discrete_map=color_map, labels={'Avg':'% Positive','Label':''})
     fig1.add_vline(x=strength_threshold, line_dash='dash', line_color='green')
     fig1.add_vline(x=weakness_threshold, line_dash='dash', line_color='red')
-    fig1.update_traces(text=top10['Avg'].round(1).astype(str)+'%', textposition='inside')
+    # fig1.update_traces(text=top10['Avg'].round(1).astype(str)+'%', textposition='inside')
+    fig1.update_traces(texttemplate='%{x:.1f}%', textposition='inside')
     fig1.update_layout(showlegend=False, height=350, margin=dict(l=0,r=0,t=10,b=0))
     fig1.update_xaxes(showticklabels=False)
     col_left.markdown("Top 10 Strengths")
@@ -205,7 +206,7 @@ if n_q > 20:
     fig2 = px.bar(bottom10, x='Avg', y='Label', orientation='h', color='Category', color_discrete_map=color_map, labels={'Avg':'% Positive','Label':''})
     fig2.add_vline(x=strength_threshold, line_dash='dash', line_color='green')
     fig2.add_vline(x=weakness_threshold, line_dash='dash', line_color='red')
-    fig2.update_traces(text=bottom10['Avg'].round(1).astype(str)+'%', textposition='inside')
+    fig2.update_traces(texttemplate='%{x:.1f}%', textposition='inside')
     fig2.update_layout(showlegend=False, height=350, margin=dict(l=0,r=0,t=10,b=0))
     fig2.update_xaxes(showticklabels=False)
     col_right.markdown("Bottom 10 Weaknesses")
@@ -217,7 +218,7 @@ else:
     fig_all = px.bar(ranked, x='Avg', y='LabelShort', orientation='h', color='Category', color_discrete_map=color_map, labels={'Avg':'% Positive','LabelShort':''})
     fig_all.add_vline(x=strength_threshold, line_dash='dash', line_color='green')
     fig_all.add_vline(x=weakness_threshold, line_dash='dash', line_color='red')
-    fig_all.update_traces(text=ranked['Avg'].round(1).astype(str)+'%', textposition='inside')
+    fig_all.update_traces(texttemplate='%{x:.1f}%', textposition='inside')
     fig_all.update_layout(showlegend=False, height=480, margin=dict(l=0,r=0,t=10,b=0))
     fig_all.update_xaxes(showticklabels=False)
     st.markdown("**All questions (ranked) — fewer than 20 questions available for this index**")
@@ -241,7 +242,7 @@ fig_idx = px.bar(
 
 fig_idx.add_vline(x=strength_threshold, line_dash="dash", line_color="green",annotation_text=f"Strength: {strength_threshold}%", annotation_position="top right")
 fig_idx.add_vline(x=weakness_threshold, line_dash="dash", line_color="red",annotation_text=f"Weakness: {weakness_threshold}%", annotation_position="top left")
-fig_idx.update_traces(text=index_performance['Positive'].round(1).astype(str)+'%', textposition='inside')
+fig_idx.update_traces(texttemplate='%{x:.1f}%', textposition='inside')
 fig_idx.update_layout(showlegend=False, margin=dict(l=0, r=0, t=10, b=0))
 st.plotly_chart(fig_idx, use_container_width=True)
 
@@ -259,11 +260,12 @@ if selected_index == 'All' or sub_counts.get(selected_index, 0) > 1:
 
     if selected_index != 'All':
         sub_df = index_breakdown[index_breakdown['Index'] == selected_index].copy()
-        sub_df = sub_df.sort_values('Positive', ascending=False).reset_index(drop=True)
+        sub_df = sub_df.sort_values('Positive', ascending=True).reset_index(drop=True)
         sub_df['Color'] = sub_df['Positive'].apply(score_color)
         sub_df['Sub.Index'] = pd.Categorical(sub_df['Sub.Index'], categories=sub_df['Sub.Index'])
 
         fig3 = px.bar(sub_df, x='Positive', y='Sub.Index', orientation='h',color='Color', color_discrete_map='identity',labels={'Positive':'% Positive','Sub.Index':'Sub-Index'})
+        fig3.update_traces(texttemplate='%{x:.1f}%', textposition='inside')
         fig3.add_vline(x=strength_threshold, line_dash="dash", line_color="green",annotation_text=f"Strength: {strength_threshold}%", annotation_position="top right")
         fig3.add_vline(x=weakness_threshold, line_dash="dash", line_color="red",annotation_text=f"Weakness: {weakness_threshold}%", annotation_position="top left")
         fig3.update_layout(height=420, margin=dict(l=0,r=0,t=10,b=0), showlegend=False)
