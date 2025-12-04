@@ -120,14 +120,14 @@ with col_trend1:
     fig4.add_hline(y=weakness_threshold, line_dash="dash", line_color="red",annotation_text=f"Weakness threshold: {weakness_threshold}%")
     fig4.update_layout(yaxis_title="% Positive", height=240, showlegend=False, margin=dict(l=0, r=0, t=0, b=0))
     fig4.update_xaxes(type='category')
-    st.plotly_chart(fig4, use_container_width=True)
+    st.plotly_chart(fig4, width='stretch')
 
 with col_trend2:
     avg_by_year = df_filtered.groupby('Year')[['Positive', 'Neutral', 'Negative']].mean()
     fig5 = px.bar(avg_by_year, barmode='stack',color_discrete_map={'Positive': 'green', 'Neutral': 'gray', 'Negative': 'red'})
     fig5.update_layout(height=240, showlegend=True, yaxis_title="% Distribution",margin=dict(l=0, r=0, t=0, b=0),legend=dict(orientation="h", yanchor="bottom", y=1.2, xanchor="center", x=0.5),legend_title_text=None)
     fig5.update_xaxes(type='category')
-    st.plotly_chart(fig5, use_container_width=True)
+    st.plotly_chart(fig5, width='stretch')
 
 # ---------------------------
 # KEY INSIGHTS
@@ -197,7 +197,7 @@ if n_q > 20:
     fig1.update_layout(showlegend=False, height=350, margin=dict(l=0,r=0,t=10,b=0))
     fig1.update_xaxes(showticklabels=False)
     col_left.markdown("Top 10 Strengths")
-    col_left.plotly_chart(fig1, use_container_width=True)
+    col_left.plotly_chart(fig1, width='stretch')
 
     # Bottom 10
     bottom10 = pf.nsmallest(10, 'Avg').reset_index().merge(q_map, on='Question')
@@ -210,7 +210,7 @@ if n_q > 20:
     fig2.update_layout(showlegend=False, height=350, margin=dict(l=0,r=0,t=10,b=0))
     fig2.update_xaxes(showticklabels=False)
     col_right.markdown("Bottom 10 Weaknesses")
-    col_right.plotly_chart(fig2, use_container_width=True)
+    col_right.plotly_chart(fig2, width='stretch')
 
 else:
     ranked = pf.reset_index().merge(q_map, on='Question').sort_values('Avg')
@@ -222,7 +222,7 @@ else:
     fig_all.update_layout(showlegend=False, height=480, margin=dict(l=0,r=0,t=10,b=0))
     fig_all.update_xaxes(showticklabels=False)
     st.markdown("**All questions (ranked) — fewer than 20 questions available for this index**")
-    st.plotly_chart(fig_all, use_container_width=True)
+    st.plotly_chart(fig_all, width='stretch')
 
 # ---------------------------
 # INDEX PERFORMANCE
@@ -234,17 +234,12 @@ index_performance['Color'] = index_performance['Positive'].apply(
     lambda v: color_map['Strength'] if v >= strength_threshold else color_map['Neutral'] if v >= weakness_threshold else color_map['Weakness']
 )
 
-fig_idx = px.bar(
-    index_performance, x='Positive', y='Index', orientation='h',
-    color='Color', color_discrete_map='identity',
-    labels={'Positive': '% Positive'}, height=300 + (len(index_performance) * 10)
-)
-
+fig_idx = px.bar(index_performance, x='Positive', y='Index', orientation='h', color='Color', color_discrete_map='identity', labels={'Positive': '% Positive'}, height=300)
 fig_idx.add_vline(x=strength_threshold, line_dash="dash", line_color="green",annotation_text=f"Strength: {strength_threshold}%", annotation_position="top right")
 fig_idx.add_vline(x=weakness_threshold, line_dash="dash", line_color="red",annotation_text=f"Weakness: {weakness_threshold}%", annotation_position="top left")
 fig_idx.update_traces(texttemplate='%{x:.1f}%', textposition='inside')
 fig_idx.update_layout(showlegend=False, margin=dict(l=0, r=0, t=10, b=0))
-st.plotly_chart(fig_idx, use_container_width=True)
+st.plotly_chart(fig_idx, width='stretch')
 
 # -----------------------------
 # SUB-INDEX BREAKDOWN
@@ -265,22 +260,22 @@ if selected_index == 'All' or sub_counts.get(selected_index, 0) > 1:
         sub_df['Sub.Index'] = pd.Categorical(sub_df['Sub.Index'], categories=sub_df['Sub.Index'])
 
         fig3 = px.bar(sub_df, x='Positive', y='Sub.Index', orientation='h',color='Color', color_discrete_map='identity',labels={'Positive':'% Positive','Sub.Index':'Sub-Index'})
-        fig3.update_traces(texttemplate='%{x:.1f}%', textposition='inside')
+        fig3.update_traces(texttemplate='%{x:.1f}%', textposition='outside')
         fig3.add_vline(x=strength_threshold, line_dash="dash", line_color="green",annotation_text=f"Strength: {strength_threshold}%", annotation_position="top right")
         fig3.add_vline(x=weakness_threshold, line_dash="dash", line_color="red",annotation_text=f"Weakness: {weakness_threshold}%", annotation_position="top left")
         fig3.update_layout(height=420, margin=dict(l=0,r=0,t=10,b=0), showlegend=False)
 
     else:
-        index_avg = df_filtered.groupby('Index')['Positive'].mean().sort_values(ascending=False)
+        index_avg = df_filtered.groupby('Index')['Positive'].mean().sort_values(ascending=True)
         index_breakdown['Index'] = pd.Categorical(index_breakdown['Index'], categories=index_avg.index)
-        index_breakdown = index_breakdown.sort_values(['Index','Positive'], ascending=[False,False])
+        index_breakdown = index_breakdown.sort_values(['Index','Positive'], ascending=[True,True]).reset_index(drop=True)
 
         fig3 = px.bar(index_breakdown, x='Positive', y='Sub.Index', orientation='h',color='Index', color_discrete_sequence=px.colors.qualitative.Set2,labels={'Positive':'% Positive','Sub.Index':'Sub-Index'})
         fig3.add_vline(x=strength_threshold, line_dash="dash", line_color="green",annotation_text=f"Strength: {strength_threshold}%", annotation_position="top right")
         fig3.add_vline(x=weakness_threshold, line_dash="dash", line_color="red",annotation_text=f"Weakness: {weakness_threshold}%", annotation_position="top left")
-        fig3.update_layout(height=420, margin=dict(l=0,r=0,t=10,b=0),legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1))
+        fig3.update_layout(height=600, margin=dict(l=0,r=0,t=10,b=0),legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="center", x=0.5))
 
-    st.plotly_chart(fig3, use_container_width=True)
+    st.plotly_chart(fig3, width='stretch')
 
 # ---------------------------
 # Question Analysis tab (drilldown + heatmap)
@@ -329,7 +324,7 @@ for row_i, avg in enumerate(row_avgs):
 
 fig6.update_layout(height=max(400, len(pivot_display) * 20),margin=dict(l=0, r=0, t=10, b=0),xaxis_title="", yaxis_title="")
 fig6.update_xaxes(type='category')  # Force categorical axis
-st.plotly_chart(fig6, use_container_width=True)
+st.plotly_chart(fig6, width='stretch')
 
 # Question drilldown (dynamic)
 if selected_question and selected_question != 'None':
@@ -359,4 +354,4 @@ if selected_question and selected_question != 'None':
     fig7.add_hline(y=weakness_threshold, line_dash="dash", line_color="red",annotation_text=f"Weakness threshold: {weakness_threshold}%", annotation_position="bottom right")
     fig7.update_layout(hovermode='x unified', height=300, yaxis_title="Percentage", margin=dict(l=0, r=0, t=10, b=0))
     fig7.update_xaxes(type='category')
-    st.plotly_chart(fig7, use_container_width=True)
+    st.plotly_chart(fig7, width='stretch')
