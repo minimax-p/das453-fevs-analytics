@@ -148,7 +148,7 @@ top_performer_row = pf['Avg_Score'].idxmax()
 top_performer = pf.loc[top_performer_row]
 q_info = q_map[q_map['Question'] == top_performer_row].iloc[0]
 c1.success(
-    f"**⭐ Top Performer (avg)**:\n\n{top_performer_row} ({top_performer['Avg_Score']:.1f}%)\n\n{truncate_text(q_info['Item.Text'], 1000)}")
+    f"**⭐ Top Performer (avg)**:\n\n{top_performer_row} ({top_performer['Avg_Score']:.1f}%)\n\n{truncate_text(q_info['Item.Text'], 120)}")
 
 # Bottom performer (use weakness_threshold to flag)
 bottom_performer_row = pf['Avg_Score'].idxmin()
@@ -156,17 +156,17 @@ bottom_performer = pf.loc[bottom_performer_row]
 q_info = q_map[q_map['Question'] == bottom_performer_row].iloc[0]
 if bottom_performer['Avg_Score'] < weakness_threshold:
     c2.error(
-        f"**🚨 Needs Attention (avg < {weakness_threshold}%)**:\n\n{bottom_performer_row} ({bottom_performer['Avg_Score']:.1f}%)\n\n{truncate_text(q_info['Item.Text'], 1000)}")
+        f"**🚨 Needs Attention (avg < {weakness_threshold}%)**:\n\n{bottom_performer_row} ({bottom_performer['Avg_Score']:.1f}%)\n\n{truncate_text(q_info['Item.Text'], 120)}")
 else:
     c2.info(
-        f"**Lowest but above threshold (>{weakness_threshold}%)**:\n\n{bottom_performer_row} ({bottom_performer['Avg_Score']:.1f}%)\n\n{truncate_text(q_info['Item.Text'], 1000)}"
+        f"**Lowest but above threshold (>{weakness_threshold}%)**:\n\n{bottom_performer_row} ({bottom_performer['Avg_Score']:.1f}%)\n\n{truncate_text(q_info['Item.Text'], 120)}"
     )
 # Most improved
 top_improved_row = pf['Trend'].idxmax()
 top_improved = pf.loc[top_improved_row]
 q_info = q_map[q_map['Question'] == top_improved_row].iloc[0]
 c3.info(
-    f"**🚀 Most Improved (2025 vs 2023)**:\n\n{top_improved_row} ({top_improved['Trend']:+.1f}%)\n\n{truncate_text(q_info['Item.Text'], 1000)}")
+    f"**🚀 Most Improved (2025 vs 2023)**:\n\n{top_improved_row} ({top_improved['Trend']:+.1f}%)\n\n{truncate_text(q_info['Item.Text'], 120)}")
 
 
 # ---------------------------
@@ -186,7 +186,7 @@ if n_q > 20:
 
     # Top 10
     top10 = pf.nlargest(10, 'Avg').reset_index().merge(q_map, on='Question')
-    top10['Label'] = top10['Question'] + ": " + top10['Item.Text'].apply(lambda x: truncate_text(x,1000))
+    top10['Label'] = top10['Question'] + ": " + top10['Item.Text'].apply(lambda x: truncate_text(x,120))
     top10 = top10.sort_values('Avg')
     fig1 = px.bar(top10, x='Avg', y='Label', orientation='h', color='Category', color_discrete_map=color_map, labels={'Avg':'% Positive','Label':''})
     fig1.add_vline(x=strength_threshold, line_dash='dash', line_color='green')
@@ -200,7 +200,7 @@ if n_q > 20:
 
     # Bottom 10
     bottom10 = pf.nsmallest(10, 'Avg').reset_index().merge(q_map, on='Question')
-    bottom10['Label'] = bottom10['Question'] + ": " + bottom10['Item.Text'].apply(lambda x: truncate_text(x,1000))
+    bottom10['Label'] = bottom10['Question'] + ": " + bottom10['Item.Text'].apply(lambda x: truncate_text(x,120))
     bottom10 = bottom10.sort_values('Avg', ascending=False)
     fig2 = px.bar(bottom10, x='Avg', y='Label', orientation='h', color='Category', color_discrete_map=color_map, labels={'Avg':'% Positive','Label':''})
     fig2.add_vline(x=strength_threshold, line_dash='dash', line_color='green')
@@ -213,7 +213,7 @@ if n_q > 20:
 
 else:
     ranked = pf.reset_index().merge(q_map, on='Question').sort_values('Avg')
-    ranked['LabelShort'] = ranked['Question'] + ": " + ranked['Item.Text'].apply(lambda x: truncate_text(x,1000))
+    ranked['LabelShort'] = ranked['Question'] + ": " + ranked['Item.Text'].apply(lambda x: truncate_text(x,120))
     fig_all = px.bar(ranked, x='Avg', y='LabelShort', orientation='h', color='Category', color_discrete_map=color_map, labels={'Avg':'% Positive','LabelShort':''})
     fig_all.add_vline(x=strength_threshold, line_dash='dash', line_color='green')
     fig_all.add_vline(x=weakness_threshold, line_dash='dash', line_color='red')
@@ -287,7 +287,7 @@ st.markdown("### Question performance heatmap")
 pivot_display = pivot_filtered[['2023', '2024', '2025']].sort_values(by='2025', ascending=True)
 pivot_with_text = pivot_display.reset_index().merge(q_map, on='Question')
 pivot_with_text['Display'] = pivot_with_text['Question'] + ': ' + pivot_with_text['Item.Text'].apply(
-    lambda x: truncate_text(x, 1000))
+    lambda x: truncate_text(x, 120))
 
 # Create heatmap with hover text
 fig6 = go.Figure(data=go.Heatmap(
